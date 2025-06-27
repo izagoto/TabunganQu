@@ -63,7 +63,3 @@ frontend/
 - Preview build: `npm run preview`
 - Deploy folder `dist/` ke hosting statis (lihat juga `gen.yaml` jika menggunakan Genezio).
 
-## Kontribusi
-Pull request & issue sangat diterima! Silakan fork repo ini dan buat PR untuk fitur/bugfix.
-
----
