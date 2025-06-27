@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # TabunganQu
 
 TabunganQu adalah aplikasi dashboard manajemen keuangan pribadi berbasis web, dibuat dengan React, Material Tailwind, dan Vite. Aplikasi ini memudahkan Anda mencatat pemasukan, pengeluaran, hutang/piutang, tagihan, serta mengelola akun dan laporan keuangan secara modern dan responsif.
