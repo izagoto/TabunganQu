@@ -1,16 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input, Button, Typography, Card } from "@material-tailwind/react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState("");
+  const navigate = useNavigate();
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    } else {
+      setIsAuthChecked(true);
+    }
+  }, [navigate]);
+
+  if (!isAuthChecked) return null;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
     if (!form.email) newErrors.email = "Email wajib diisi";
@@ -18,8 +30,20 @@ export function SignIn() {
     setErrors(newErrors);
     setLoginError("");
     if (Object.keys(newErrors).length > 0) return;
-    // Dummy login logic: always fail for demo
-    setLoginError("Email atau password salah");
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login gagal");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/dashboard");
+    } catch (err) {
+      setLoginError(err.message);
+    }
   };
 
   return (
@@ -112,6 +136,12 @@ export function SignIn() {
       </Card>
     </div>
   );
+}
+
+export function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.location.href = "/sign-in";
 }
 
 export default SignIn;

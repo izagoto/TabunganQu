@@ -10,11 +10,23 @@ import {
 import routes from "@/routes";
 import { useMaterialTailwindController } from "@/context";
 import PageNotFound from "@/pages/PageNotFound";
+import { useEffect, useState } from "react";
 
 export function Dashboard() {
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
   const location = useLocation();
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/sign-in";
+    } else {
+      setIsAuthChecked(true);
+    }
+  }, []);
+
+  if (!isAuthChecked) return null;
 
   // Ambil semua pages dari routes dashboard
   const dashboardPages = routes.find(r => r.layout === "dashboard").pages;

@@ -6,7 +6,7 @@ import {
   Button,
   Typography,
 } from "@material-tailwind/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { ArrowRightOnRectangleIcon } from "@heroicons/react/24/solid";
 
@@ -14,26 +14,39 @@ export function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
-    name: "",
+    fullName: "",
     username: "",
     email: "",
     password: "",
     package: "gratis",
+    photo: "",
   });
   const [errors, setErrors] = useState({});
   const [registerError, setRegisterError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
-    if (!form.name) newErrors.name = "Nama lengkap wajib diisi";
+    if (!form.fullName) newErrors.fullName = "Nama lengkap wajib diisi";
     if (!form.username) newErrors.username = "Username wajib diisi";
     if (!form.email) newErrors.email = "Email wajib diisi";
     if (!form.password) newErrors.password = "Password wajib diisi";
     setErrors(newErrors);
     setRegisterError("");
     if (Object.keys(newErrors).length > 0) return;
-    setRegisterError("Registrasi gagal. Silakan coba lagi.");
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Registrasi gagal");
+      navigate("/sign-in");
+    } catch (err) {
+      setRegisterError(err.message);
+    }
   };
 
   // Registrasi gratis
@@ -72,11 +85,11 @@ export function SignUp() {
               type="text"
               size="lg"
               placeholder="Nama lengkap"
-              value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-              className={`rounded-lg bg-blue-gray-50 focus:bg-white ${errors.name ? 'border border-red-500' : ''}`}
+              value={form.fullName}
+              onChange={e => setForm({ ...form, fullName: e.target.value })}
+              className={`rounded-lg bg-blue-gray-50 focus:bg-white ${errors.fullName ? 'border border-red-500' : ''}`}
             />
-            {errors.name && (<Typography className="text-red-500 text-sm mt-1">{errors.name}</Typography>)}
+            {errors.fullName && (<Typography className="text-red-500 text-sm mt-1">{errors.fullName}</Typography>)}
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1">Username</label>

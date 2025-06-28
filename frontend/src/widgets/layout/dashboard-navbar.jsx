@@ -42,6 +42,13 @@ export function DashboardNavbar() {
     },
   ];
 
+  // Ambil nama user dari localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user"));
+  } catch {}
+  const userName = user?.fullName || user?.name || "Guest";
+
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -124,6 +131,7 @@ export function DashboardNavbar() {
               </IconButton>
             </MenuHandler>
             <MenuList>
+              <div className="px-4 py-2 font-semibold text-blue-gray-700 border-b mb-2">{userName}</div>
               <MenuItem>
                 <Link to="/account-settings" className="flex items-center gap-2">
                   <Cog6ToothIcon className="h-5 w-5 text-blue-gray-400" />
