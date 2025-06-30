@@ -241,16 +241,26 @@ exports.updateMyProfile = async (req, res) => {
       return res.status(404).json({ status: 404, messages: 'User tidak ditemukan.', data: null });
     }
     
-    const { fullName, email, password, photo } = req.body;
-    
+    const { fullName, username, email, password, photo } = req.body;
+
+    // Cek email duplikat
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
         return res.status(400).json({ status: 400, messages: 'Email sudah terdaftar.', data: null });
       }
     }
-    
+
+    // Cek username duplikat
+    if (username && username !== user.username) {
+      const existingUsername = await User.findOne({ where: { username } });
+      if (existingUsername) {
+        return res.status(400).json({ status: 400, messages: 'Username sudah digunakan.', data: null });
+      }
+    }
+
     if (fullName) user.fullName = fullName;
+    if (username) user.username = username;
     if (email) user.email = email;
     if (photo !== undefined) user.photo = photo;
     if (password) {
@@ -294,4 +304,34 @@ exports.uploadPhoto = [upload.single('photo'), async (req, res) => {
   } catch (err) {
     res.status(500).json({ status: 500, messages: err.message || 'Terjadi kesalahan server.', data: null });
   }
-}]; 
+}];
+
+exports.deletePhoto = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ status: 404, messages: 'User tidak ditemukan.', data: null });
+    }
+    // Simpan path file lama jika ada
+    let oldPhotoPath = null;
+    if (user.photo) {
+      // Ekstrak path file lokal dari URL
+      const match = user.photo.match(/\/public\/img\/(.+)$/);
+      if (match) {
+        oldPhotoPath = path.join(__dirname, '../../public/img', match[1]);
+      }
+    }
+    user.photo = null;
+    await user.save();
+    // Hapus file foto lama jika ada
+    if (oldPhotoPath) {
+      const fs = require('fs');
+      fs.unlink(oldPhotoPath, (err) => {
+        // Tidak masalah jika gagal hapus file (file mungkin sudah tidak ada)
+      });
+    }
+    res.json({ status: 200, messages: 'Foto profil berhasil dihapus.', data: { photo: null } });
+  } catch (err) {
+    res.status(500).json({ status: 500, messages: err.message || 'Terjadi kesalahan server.', data: null });
+  }
+}; 

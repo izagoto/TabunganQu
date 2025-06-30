@@ -25,7 +25,7 @@ import {
   projectsTableData,
   ordersOverviewData,
 } from "@/data";
-import { CheckCircleIcon, ClockIcon, PlusCircleIcon, MinusCircleIcon, ChartBarIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon, ClockIcon, PlusCircleIcon, MinusCircleIcon, ChartBarIcon, XMarkIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 
 export function Home() {
@@ -36,6 +36,29 @@ export function Home() {
   const [incomeError, setIncomeError] = useState({});
   const [expenseError, setExpenseError] = useState({});
   const navigate = useNavigate();
+  // ALERT LOGIN BERHASIL
+  const [alert, setAlert] = useState("");
+  const [alertType, setAlertType] = useState("success");
+  const [alertVisible, setAlertVisible] = useState(false);
+  React.useEffect(() => {
+    if (localStorage.getItem("showLoginSuccess")) {
+      setAlert("Berhasil login! Selamat datang di dashboard.");
+      setAlertType("success");
+      setAlertVisible(true);
+      localStorage.removeItem("showLoginSuccess");
+    }
+  }, []);
+  React.useEffect(() => {
+    if (alert) {
+      setAlertVisible(true);
+      // Progress bar berjalan 3 detik, baru alert menghilang
+      const hideTimer = setTimeout(() => {
+        setAlertVisible(false);
+        setTimeout(() => setAlert("") , 500); // waktu fade out 0.5s
+      }, 3000);
+      return () => { clearTimeout(hideTimer); };
+    }
+  }, [alert]);
 
   const handleInputChange = (e, type) => {
     const { name, value } = e.target;
@@ -74,6 +97,45 @@ export function Home() {
 
   return (
     <div className="mt-12">
+      {/* ALERT GLOBAL DI SUDUT KANAN ATAS */}
+      {alert && (
+        <div
+          className={`fixed z-50 right-6 top-6 min-w-[320px] max-w-xs flex flex-col items-start gap-2 rounded-lg shadow-lg px-5 py-4 border transition-opacity duration-500
+            ${alertType === 'success'
+              ? 'bg-green-100 border-green-300 text-green-800'
+              : 'bg-red-100 border-red-300 text-red-800'}
+            ${alertVisible ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <div className="flex items-start gap-3 w-full">
+            <span className="mt-1">
+              {alertType === 'success' ? (
+                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+              ) : (
+                <ExclamationCircleIcon className="h-6 w-6 text-red-500" />
+              )}
+            </span>
+            <div className="flex-1">
+              <span className="font-bold mr-1">{alertType === 'success' ? 'Success:' : 'Error:'}</span>
+              <span>{alert}</span>
+            </div>
+            <button
+              onClick={() => setAlert("")}
+              className="ml-2 p-1 rounded hover:bg-black/10 transition"
+              aria-label="Close alert"
+            >
+              <XMarkIcon className={`h-5 w-5 ${alertType === 'success' ? 'text-green-600' : 'text-red-500'}`} />
+            </button>
+          </div>
+          {/* Progress Bar */}
+          <div className="w-full h-1 bg-green-200 rounded overflow-hidden mt-2">
+            <div
+              className="h-full bg-green-500 transition-all duration-3000"
+              style={{ width: alertVisible ? '100%' : '0%', transition: 'width 3s linear' }}
+            />
+          </div>
+        </div>
+      )}
+      {/* END ALERT */}
       <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
         {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
           <StatisticsCard

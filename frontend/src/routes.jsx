@@ -26,7 +26,6 @@ import DebtLoanPage from "@/pages/dashboard/debt-loan";
 import UserManagementPage from "@/pages/dashboard/user-management";
 import BillsReminderPage from "@/pages/dashboard/bills-reminder";
 import FinanceReportPage from "@/pages/dashboard/finance-report";
-import LocationPage from "@/pages/dashboard/location";
 import AccountSettingsPage from "@/pages/dashboard/account-settings";
 
 const icon = {
@@ -78,8 +77,8 @@ export const routes = [
         name: "Tagihan dan Pengingat",
         path: "/bills-reminder",
         element: <BillsReminderPage />,
-  },
-  {
+      },
+      {
         icon: <ChartBarIcon {...icon} />,
         name: "Laporan Keuangan",
         path: "/finance-report",
@@ -96,12 +95,6 @@ export const routes = [
         name: "Pengaturan Akun",
         path: "/account-settings",
         element: <AccountSettingsPage />,
-      },
-      {
-        icon: <MapPinIcon {...icon} />,
-        name: "Location",
-        path: "/location",
-        element: <LocationPage />,
       },
     ],
   },

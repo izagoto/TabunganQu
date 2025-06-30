@@ -9,6 +9,7 @@ import {
 import PropTypes from "prop-types";
 import Chart from "react-apexcharts";
 import React, { useState, useEffect, useRef } from "react";
+import { XMarkIcon, CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/solid";
 
 export function StatisticsChart({ color, chart, title, description, footer }) {
   // Ambil data user dari localStorage
@@ -55,11 +56,26 @@ export function StatisticsChart({ color, chart, title, description, footer }) {
   const handleAvatarClick = () => {
     if (fileInputRef.current) fileInputRef.current.click();
   };
+  const [alert, setAlert] = useState("");
+  const [alertType, setAlertType] = useState("success");
+  const [alertVisible, setAlertVisible] = useState(false);
+
+  // Alert otomatis hilang setelah beberapa detik dengan animasi fade out
+  useEffect(() => {
+    if (alert) {
+      setAlertVisible(true);
+      const fadeTimer = setTimeout(() => setAlertVisible(false), 2500);
+      const hideTimer = setTimeout(() => setAlert("") , 3000);
+      return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
+    }
+  }, [alert]);
+
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
     setUploadError("");
+    setAlert("");
     try {
       const formData = new FormData();
       formData.append("photo", file);
@@ -75,8 +91,12 @@ export function StatisticsChart({ color, chart, title, description, footer }) {
       const updatedUser = { ...user, photo: data.data.photo };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUserPhoto(data.data.photo || defaultPhoto);
+      setAlertType("success");
+      setAlert("Foto profil berhasil diupdate!");
     } catch (err) {
       setUploadError(err.message);
+      setAlertType("error");
+      setAlert("Gagal upload foto profil!");
     } finally {
       setUploading(false);
     }
@@ -84,48 +104,85 @@ export function StatisticsChart({ color, chart, title, description, footer }) {
 
   if (!chart) {
     return (
-      <Card className="border border-blue-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[320px] rounded-xl max-w-sm mx-auto" style={{ background: 'rgb(0,146,185)' }}>
-        <CardBody className="flex flex-col items-center justify-center px-4 py-4">
-          <div className="relative flex flex-col items-center mb-2">
-            <img
-              src={userPhoto || defaultPhoto}
-              alt={userName}
-              className="border-4 border-white shadow-lg rounded-full w-28 h-28 object-cover cursor-pointer hover:opacity-80 transition"
-              onClick={handleAvatarClick}
-              title="Klik untuk ganti foto profil"
-            />
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handlePhotoUpload}
-              className="hidden"
-            />
-            {/* Status online indicator */}
-            <span className={`absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-          </div>
-          {uploading && <div className="text-xs text-white mb-1">Uploading...</div>}
-          {uploadError && <div className="text-xs text-red-200 mb-1">{uploadError}</div>}
-          <Typography variant="h5" className="mb-1 font-bold text-white text-center">
-            Selamat datang, {userName}!
-          </Typography>
-          <Typography
-            variant="small"
-            className={`font-semibold mb-1 text-center px-3 py-1 rounded-full inline-block ${userRole === 'admin' ? 'bg-cyan-600/80 text-white' : 'bg-blue-gray-400/80 text-white'}`}
+      <>
+        {/* ALERT GLOBAL DI SUDUT KANAN BAWAH */}
+        {alert && (
+          <div
+            className={`fixed z-50 right-6 bottom-6 min-w-[320px] max-w-xs flex items-start gap-3 rounded-lg shadow-lg px-5 py-4 border transition-opacity duration-500
+              ${alertType === 'success'
+                ? 'bg-green-100 border-green-300 text-green-800'
+                : 'bg-red-100 border-red-300 text-red-800'}
+              ${alertVisible ? 'opacity-100' : 'opacity-0'}`}
           >
-            {userRole === 'admin' ? 'Administrator' : 'User Biasa'}
-          </Typography>
-          <div className="flex items-center gap-2 mb-3">
-            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}`}></span>
-            <Typography variant="small" className="text-white/80">
-              {isOnline ? 'Online' : 'Offline'}
-            </Typography>
+            <span className="mt-1">
+              {alertType === 'success' ? (
+                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+              ) : (
+                <ExclamationCircleIcon className="h-6 w-6 text-red-500" />
+              )}
+            </span>
+            <div className="flex-1">
+              <span className="font-bold mr-1">{alertType === 'success' ? 'Success:' : 'Error:'}</span>
+              <span>{alert}</span>
+            </div>
+            <button
+              onClick={() => setAlert("")}
+              className="ml-2 p-1 rounded hover:bg-black/10 transition"
+              aria-label="Close alert"
+            >
+              <XMarkIcon className={`h-5 w-5 ${alertType === 'success' ? 'text-green-600' : 'text-red-500'}`} />
+            </button>
           </div>
-          <Typography variant="small" className="text-white text-center mt-2">
-            Ayo kelola keuanganmu dengan TabunganQu
-          </Typography>
-        </CardBody>
-      </Card>
+        )}
+        {/* END ALERT */}
+        <Card className="border border-blue-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[320px] rounded-xl max-w-sm mx-auto" style={{ background: 'rgb(0,146,185)' }}>
+          <CardBody className="flex flex-col items-center justify-center px-4 py-4">
+            <div className="relative flex flex-col items-center mb-2">
+              <img
+                src={userPhoto && userPhoto !== "null" ? userPhoto : defaultPhoto}
+                alt={userName}
+                className="border-4 border-white shadow-lg rounded-full w-28 h-28 object-cover cursor-pointer hover:opacity-80 transition"
+                onClick={handleAvatarClick}
+                title="Klik untuk ganti foto profil"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+              {/* Status online indicator */}
+              <span className={`absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+            </div>
+            {uploading && <div className="text-xs text-white mb-1">Uploading...</div>}
+            {uploadError && <div className="text-xs text-red-200 mb-1">{uploadError}</div>}
+            <Typography variant="h5" className="mb-1 font-bold text-white text-center">
+              Selamat datang, {userName}!
+            </Typography>
+            <Typography
+              variant="small"
+              className={`font-semibold mb-1 text-center px-3 py-1 rounded-full inline-block
+                ${userRole === 'admin'
+                  ? 'bg-cyan-600/80 text-yellow-300'
+                  : 'bg-blue-gray-400/80 text-yellow-300'
+                }`
+            }
+            >
+              {userRole === 'admin' ? 'Administrator' : 'User Biasa'}
+            </Typography>
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}`}></span>
+              <Typography variant="small" className="text-white/80">
+                {isOnline ? 'Online' : 'Offline'}
+              </Typography>
+            </div>
+            <Typography variant="small" className="text-white text-center mt-2">
+              Ayo kelola keuanganmu dengan TabunganQu
+            </Typography>
+          </CardBody>
+        </Card>
+      </>
     );
   }
 

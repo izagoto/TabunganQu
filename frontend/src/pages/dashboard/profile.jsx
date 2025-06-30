@@ -112,7 +112,6 @@ export function Profile() {
                 "first name": "Alec M. Thompson",
                 mobile: "(44) 123 1234 123",
                 email: "alecthompson@mail.com",
-                location: "USA",
                 social: (
                   <div className="flex items-center gap-4">
                     <i className="fa-brands fa-facebook text-blue-700" />

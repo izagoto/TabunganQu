@@ -40,6 +40,7 @@ export function SignIn() {
       if (!res.ok) throw new Error(data.messages || "Login gagal");
       localStorage.setItem("token", data.data.token);
       localStorage.setItem("user", JSON.stringify(data.data.user));
+      localStorage.setItem("showLoginSuccess", "1");
       navigate("/dashboard");
     } catch (err) {
       setLoginError(err.message);

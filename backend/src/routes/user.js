@@ -9,6 +9,7 @@ const isAdmin = require('../middlewares/isAdmin');
 router.get('/profile', auth, userController.getMyProfile);
 router.put('/profile', auth, userController.updateMyProfile);
 router.post('/profile/photo', auth, userController.uploadPhoto);
+router.delete('/profile/photo', auth, userController.deletePhoto);
 
 // ===== ADMIN ROUTES =====
 // Semua endpoint admin memerlukan auth dan role admin
