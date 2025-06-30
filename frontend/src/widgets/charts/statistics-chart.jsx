@@ -8,26 +8,120 @@ import {
 } from "@material-tailwind/react";
 import PropTypes from "prop-types";
 import Chart from "react-apexcharts";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export function StatisticsChart({ color, chart, title, description, footer }) {
-  // Simulasi nama user dan foto, bisa diganti dengan state/auth user
-  const userName = "User";
-  const userPhoto = "/img/203966659.jpeg";
+  // Ambil data user dari localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user"));
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+  }
+  const defaultPhoto = "/img/blank_profile.webp";
+  const [userPhoto, setUserPhoto] = useState(user?.photo || defaultPhoto);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef();
+
+  // Data user untuk welcome card
+  const userName = user?.fullName || "User";
+  const userRole = user?.role || "user";
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    setUserPhoto(user?.photo || defaultPhoto);
+    // eslint-disable-next-line
+  }, [user?.photo]);
 
   // Jika chart adalah objek filter (bukan chart tunggal)
   const isSummaryChart = chart && chart.daily && chart.monthly && chart.yearly;
   const [filter, setFilter] = useState("monthly");
 
+  // Handler upload foto dari avatar
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/users/profile/photo", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.messages || "Upload gagal");
+      // Update localStorage dan state user
+      const updatedUser = { ...user, photo: data.data.photo };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUserPhoto(data.data.photo || defaultPhoto);
+    } catch (err) {
+      setUploadError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (!chart) {
     return (
       <Card className="border border-blue-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[320px] rounded-xl max-w-sm mx-auto" style={{ background: 'rgb(0,146,185)' }}>
-        <CardBody className="flex flex-col items-center justify-center mt-[-32px] px-4 py-4">
-          <Avatar src={userPhoto} alt={userName} size="xl" className="-mt-10 mb-4 border-4 border-black shadow-lg rounded-full w-28 h-28" />
-          <Typography variant="h5" className="mb-2 font-bold text-white">
+        <CardBody className="flex flex-col items-center justify-center px-4 py-4">
+          <div className="relative flex flex-col items-center mb-2">
+            <img
+              src={userPhoto || defaultPhoto}
+              alt={userName}
+              className="border-4 border-white shadow-lg rounded-full w-28 h-28 object-cover cursor-pointer hover:opacity-80 transition"
+              onClick={handleAvatarClick}
+              title="Klik untuk ganti foto profil"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+            {/* Status online indicator */}
+            <span className={`absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+          </div>
+          {uploading && <div className="text-xs text-white mb-1">Uploading...</div>}
+          {uploadError && <div className="text-xs text-red-200 mb-1">{uploadError}</div>}
+          <Typography variant="h5" className="mb-1 font-bold text-white text-center">
             Selamat datang, {userName}!
           </Typography>
-          <Typography variant="small" className="text-white">
+          <Typography
+            variant="small"
+            className={`font-semibold mb-1 text-center px-3 py-1 rounded-full inline-block ${userRole === 'admin' ? 'bg-cyan-600/80 text-white' : 'bg-blue-gray-400/80 text-white'}`}
+          >
+            {userRole === 'admin' ? 'Administrator' : 'User Biasa'}
+          </Typography>
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-gray-400'}`}></span>
+            <Typography variant="small" className="text-white/80">
+              {isOnline ? 'Online' : 'Offline'}
+            </Typography>
+          </div>
+          <Typography variant="small" className="text-white text-center mt-2">
             Ayo kelola keuanganmu dengan TabunganQu
           </Typography>
         </CardBody>
@@ -105,6 +199,7 @@ export function StatisticsChart({ color, chart, title, description, footer }) {
 StatisticsChart.defaultProps = {
   color: "blue",
   footer: null,
+  chart: null,
 };
 
 StatisticsChart.propTypes = {
@@ -130,7 +225,7 @@ StatisticsChart.propTypes = {
     "pink",
     "red",
   ]),
-  chart: PropTypes.object.isRequired,
+  chart: PropTypes.object,
   title: PropTypes.node.isRequired,
   description: PropTypes.node.isRequired,
   footer: PropTypes.node,

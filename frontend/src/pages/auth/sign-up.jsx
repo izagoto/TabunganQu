@@ -65,7 +65,7 @@ export function SignUp() {
             <span>
               <b>Registrasi Gratis</b> – Anda dapat mendaftar tanpa biaya dan langsung menggunakan aplikasi.
             </span>
-          </div>
+      </div>
         )}
         <Typography variant="h4" className="font-bold text-center mb-6">
           Daftar ke TabunganQu
@@ -149,7 +149,7 @@ export function SignUp() {
           </Button>
         </form>
       </Card>
-    </div>
+      </div>
   );
 }
 

@@ -47,17 +47,17 @@ export function Dashboard() {
       />
       <div className="flex flex-col h-screen p-4 xl:ml-80">
         <div className="sticky top-0 z-50" style={{ backgroundColor: 'rgb(246,247,248)' }}>
-          <DashboardNavbar />
+        <DashboardNavbar />
         </div>
         <div className="flex-1 overflow-auto">
           {/* <Configurator /> */}
-          <Routes>
+        <Routes>
             {dashboardPages.map(({ path, element }) => (
               <Route key={path} path={path.replace(/^\//, "")} element={element} />
             ))}
             <Route path="" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<PageNotFound />} />
-          </Routes>
+        </Routes>
         </div>
       </div>
     </div>

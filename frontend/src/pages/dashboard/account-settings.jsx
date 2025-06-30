@@ -1,6 +1,14 @@
 import React, { useRef, useState } from "react";
 import { Cog6ToothIcon, UserCircleIcon, TrashIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, LockClosedIcon } from "@heroicons/react/24/solid";
 
+const getUserFromStorage = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user"));
+  } catch {
+    return null;
+  }
+};
+
 const dummyProfile = {
   photo: null,
   name: "Budi Santoso",
@@ -10,26 +18,55 @@ const dummyProfile = {
 
 export default function AccountSettingsPage() {
   const [tab, setTab] = useState("profile");
-  const [profile, setProfile] = useState(dummyProfile);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [user, setUser] = useState(getUserFromStorage());
+  const [photoPreview, setPhotoPreview] = useState(user?.photo || "/img/blank_profile.webp");
   const [password, setPassword] = useState("");
   const [importError, setImportError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef();
+
+  const defaultPhoto = "/img/blank_profile.webp";
 
   // Dummy handler
   const handleProfileChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    setUser({ ...user, [e.target.name]: e.target.value });
   };
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setPhotoPreview(URL.createObjectURL(file));
-      setProfile({ ...profile, photo: file });
+    if (!file) return;
+    setPhotoPreview(URL.createObjectURL(file));
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/users/profile/photo", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.messages || "Upload gagal");
+      // Update localStorage dan state user
+      const updatedUser = { ...user, photo: data.data.photo };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      setPhotoPreview(data.data.photo || defaultPhoto);
+    } catch (err) {
+      setUploadError(err.message);
+    } finally {
+      setUploading(false);
     }
   };
   const handlePhotoRemove = () => {
-    setPhotoPreview(null);
-    setProfile({ ...profile, photo: null });
+    setPhotoPreview(defaultPhoto);
+    // (Opsional) Kirim request ke backend untuk hapus foto jika ingin
+    // Update localStorage
+    const updatedUser = { ...user, photo: null };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
   const handleExport = () => {
@@ -87,28 +124,29 @@ export default function AccountSettingsPage() {
               <div className="flex gap-8 items-start">
                 <div className="relative flex flex-col items-center mt-1">
                   {photoPreview ? (
-                    <img src={photoPreview} alt="profile" className="h-44 w-44 rounded-full object-cover border-4 border-cyan-100 shadow-lg" />
+                    <img src={photoPreview || defaultPhoto} alt="profile" className="h-44 w-44 rounded-full object-cover border-4 border-cyan-100 shadow-lg" />
                   ) : (
-                    <img src="/img/203966659.jpeg" alt="profile" className="h-44 w-44 rounded-full object-cover border-4 border-cyan-100 shadow-lg" />
+                    <img src={defaultPhoto} alt="profile" className="h-44 w-44 rounded-full object-cover border-4 border-cyan-100 shadow-lg" />
                   )}
                   <input type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" id="upload-photo" />
                   <div className="flex gap-2 mt-3">
-                    <label htmlFor="upload-photo" className="cursor-pointer text-xs text-cyan-700 font-semibold hover:underline">Upload Foto</label>
+                    <label htmlFor="upload-photo" className="cursor-pointer text-xs text-cyan-700 font-semibold hover:underline">{uploading ? "Uploading..." : "Upload Foto"}</label>
                     {photoPreview && <button type="button" onClick={handlePhotoRemove} className="text-xs text-red-500 font-semibold hover:underline">Hapus Foto</button>}
                   </div>
+                  {uploadError && <div className="text-xs text-red-500 mt-1">{uploadError}</div>}
                 </div>
                 <div className="flex-1 flex flex-col gap-5">
                   <div>
                     <label className="block text-xs font-semibold mb-1 text-blue-gray-700">Nama Lengkap</label>
-                    <input name="name" value={profile.name} onChange={handleProfileChange} className="border rounded-lg px-4 py-3 w-full text-base focus:outline-none focus:ring-2 focus:ring-cyan-200" />
+                    <input name="name" value={user.name} onChange={handleProfileChange} className="border rounded-lg px-4 py-3 w-full text-base focus:outline-none focus:ring-2 focus:ring-cyan-200" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold mb-1 text-blue-gray-700">Username</label>
-                    <input name="username" value={profile.username} onChange={handleProfileChange} className="border rounded-lg px-4 py-3 w-full text-base focus:outline-none focus:ring-2 focus:ring-cyan-200" />
+                    <input name="username" value={user.username} onChange={handleProfileChange} className="border rounded-lg px-4 py-3 w-full text-base focus:outline-none focus:ring-2 focus:ring-cyan-200" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold mb-1 text-blue-gray-700">Email</label>
-                    <input name="email" value={profile.email} onChange={handleProfileChange} className="border rounded-lg px-4 py-3 w-full text-base focus:outline-none focus:ring-2 focus:ring-cyan-200" />
+                    <input name="email" value={user.email} onChange={handleProfileChange} className="border rounded-lg px-4 py-3 w-full text-base focus:outline-none focus:ring-2 focus:ring-cyan-200" />
                   </div>
                 </div>
               </div>

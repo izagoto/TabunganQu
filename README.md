@@ -1,9 +1,9 @@
 # TabunganQu
 
-TabunganQu adalah aplikasi dashboard manajemen keuangan pribadi berbasis web, dibuat dengan React, Material Tailwind, dan Vite. Aplikasi ini memudahkan Anda mencatat pemasukan, pengeluaran, hutang/piutang, tagihan, serta mengelola akun dan laporan keuangan secara modern dan responsif.
+TabunganQu adalah aplikasi dashboard manajemen keuangan pribadi berbasis web, dibuat dengan React, Material Tailwind, Vite, Node.js, Express, dan PostgreSQL. Aplikasi ini memudahkan Anda mencatat pemasukan, pengeluaran, hutang/piutang, tagihan, serta mengelola akun dan laporan keuangan secara modern dan responsif.
 
 ## Fitur Utama
-- **Autentikasi:** Login & registrasi gratis.
+- **Autentikasi:** Login, register, logout, proteksi route (JWT).
 - **Dashboard:** Ringkasan saldo, pemasukan, pengeluaran, dan pertumbuhan keuangan.
 - **Pemasukan & Pengeluaran:** Catat dan kelola transaksi harian.
 - **Kategori:** Kelola kategori pemasukan/pengeluaran.
@@ -17,49 +17,90 @@ TabunganQu adalah aplikasi dashboard manajemen keuangan pribadi berbasis web, di
 - **Responsive:** Tampilan mobile & desktop, sidebar otomatis menjadi hamburger menu di mobile.
 
 ## Teknologi
-- [React 18](https://reactjs.org/)
-- [Material Tailwind React](https://www.material-tailwind.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Vite](https://vitejs.dev/)
-- [React Router DOM](https://reactrouter.com/)
-- [Heroicons](https://heroicons.com/)
+- **Frontend:**
+  - React 18
+  - Material Tailwind React
+  - Tailwind CSS
+  - Vite
+  - React Router DOM
+  - Heroicons
+- **Backend:**
+  - Node.js + Express
+  - Sequelize ORM
+  - PostgreSQL
+  - JWT, bcryptjs, dotenv, cors
 
 ## Struktur Folder
 ```
-frontend/
-  ├── public/
-  ├── src/
-  │   ├── pages/
-  │   │   └── dashboard/   # Semua halaman fitur utama
-  │   ├── layouts/         # Layout utama dashboard
-  │   ├── widgets/         # Komponen UI (cards, charts, layout)
-  │   ├── context/         # State global (sidebar, theme, dsb)
-  │   ├── data/            # Data dummy
+TabunganQu/
+  ├── frontend/
+  │   ├── public/
+  │   ├── src/
+  │   │   ├── pages/
+  │   │   │   └── dashboard/   # Semua halaman fitur utama
+  │   │   ├── layouts/         # Layout utama dashboard
+  │   │   ├── widgets/         # Komponen UI (cards, charts, layout)
+  │   │   ├── context/         # State global (sidebar, theme, dsb)
+  │   │   ├── data/            # Data dummy
+  │   │   └── ...
+  │   ├── package.json
   │   └── ...
-  ├── package.json
-  ├── tailwind.config.cjs
+  ├── backend/
+  │   ├── src/
+  │   │   ├── controllers/
+  │   │   ├── models/
+  │   │   ├── routes/
+  │   │   ├── middlewares/
+  │   │   ├── config/
+  │   │   └── app.js
+  │   ├── .env
+  │   ├── package.json
+  │   └── ...
   └── ...
 ```
 
 ## Cara Instalasi & Menjalankan
-1. **Clone repo:**
-   ```bash
-   git clone <repo-url>
-   cd TabunganQu/frontend
-   ```
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Jalankan development server:**
-   ```bash
-   npm run dev
-   ```
-4. **Akses aplikasi:**
-   Buka [http://localhost:5173](http://localhost:5173) di browser.
+### 1. **Clone repo:**
+```bash
+git clone <repo-url>
+cd TabunganQu
+```
+
+### 2. **Setup & Jalankan Backend**
+```bash
+cd backend
+npm install
+# Edit file .env sesuai koneksi PostgreSQL Anda
+npx nodemon src/app.js
+```
+Contoh file `.env`:
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=tabunganqu
+DB_USER=postgres
+DB_PASS=postgres
+JWT_SECRET=supersecretjwtkey
+JWT_EXPIRES_IN=1d
+```
+
+### 3. **Setup & Jalankan Frontend**
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+Akses aplikasi di [http://localhost:5173](http://localhost:5173)
 
 ## Build & Deploy
-- Build production: `npm run build`
-- Preview build: `npm run preview`
-- Deploy folder `dist/` ke hosting statis (lihat juga `gen.yaml` jika menggunakan Genezio).
+- Build frontend: `npm run build` (folder dist/)
+- Deploy backend: pastikan environment dan database sudah sesuai
 
+## API Endpoint Utama
+- **Auth:**
+  - POST `/api/auth/register` (register)
+  - POST `/api/auth/login` (login)
+- **AccountBank:** `/api/accounts` (CRUD)
+- **Category:** `/api/categories` (CRUD)
+- **Income:** `/api/incomes` (CRUD)
+- (Lihat kode backend untuk endpoint lain)

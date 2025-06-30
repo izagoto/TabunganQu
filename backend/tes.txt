@@ -1,6 +1,0 @@
-Backend (Setelah Frontend)
-Setup project Node.js + Express.
-Koneksi ke PostgreSQL.
-Membuat endpoint untuk setiap fitur (auth, transaksi, kategori, dsb).
-Implementasi autentikasi JWT.
-CRUD untuk setiap resource.

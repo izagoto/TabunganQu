@@ -37,9 +37,9 @@ export function SignIn() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login gagal");
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      if (!res.ok) throw new Error(data.messages || "Login gagal");
+      localStorage.setItem("token", data.data.token);
+      localStorage.setItem("user", JSON.stringify(data.data.user));
       navigate("/dashboard");
     } catch (err) {
       setLoginError(err.message);
@@ -55,7 +55,7 @@ export function SignIn() {
         </div>
         <Typography variant="h4" className="font-bold text-center mb-6">
           Masuk ke TabunganQu
-        </Typography>
+            </Typography>
         <div className="flex mb-6 w-full bg-gray-100 rounded-xl p-1">
           <Link
             to="/sign-in"
@@ -131,10 +131,10 @@ export function SignIn() {
           <Button type="submit" className="mt-2 bg-cyan-600 hover:bg-cyan-700 text-base font-bold py-3 rounded-lg flex items-center justify-center gap-2" fullWidth>
             <ArrowRightOnRectangleIcon className="h-5 w-5" />
             Masuk
-          </Button>
+            </Button>
         </form>
       </Card>
-    </div>
+      </div>
   );
 }
 

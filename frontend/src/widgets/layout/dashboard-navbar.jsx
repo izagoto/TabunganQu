@@ -1,13 +1,11 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   Navbar,
-  Button,
   IconButton,
   Menu,
   MenuHandler,
   MenuList,
   MenuItem,
-  Avatar,
   Typography,
   Breadcrumbs,
 } from "@material-tailwind/react";
@@ -46,8 +44,12 @@ export function DashboardNavbar() {
   let user = null;
   try {
     user = JSON.parse(localStorage.getItem("user"));
-  } catch {}
-  const userName = user?.fullName || user?.name || "Guest";
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+  }
+  
+  // Perbaiki logic untuk mengambil nama user
+  const userName = user?.fullName || user?.name || user?.username || "Guest";
 
   return (
     <Navbar

@@ -31,6 +31,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'user',
   },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   photo: {
     type: DataTypes.STRING,
     allowNull: true,

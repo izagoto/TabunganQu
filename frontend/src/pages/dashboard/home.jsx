@@ -112,6 +112,7 @@ export function Home() {
           <StatisticsChart
             key={statisticsChartsData[1].title}
             {...statisticsChartsData[1]}
+            chart={null}
             footer={null}
           />
         </div>
