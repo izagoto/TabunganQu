@@ -30,35 +30,6 @@ TabunganQu adalah aplikasi dashboard manajemen keuangan pribadi berbasis web, di
   - PostgreSQL
   - JWT, bcryptjs, dotenv, cors
 
-## Struktur Folder
-```
-TabunganQu/
-  ├── frontend/
-  │   ├── public/
-  │   ├── src/
-  │   │   ├── pages/
-  │   │   │   └── dashboard/   # Semua halaman fitur utama
-  │   │   ├── layouts/         # Layout utama dashboard
-  │   │   ├── widgets/         # Komponen UI (cards, charts, layout)
-  │   │   ├── context/         # State global (sidebar, theme, dsb)
-  │   │   ├── data/            # Data dummy
-  │   │   └── ...
-  │   ├── package.json
-  │   └── ...
-  ├── backend/
-  │   ├── src/
-  │   │   ├── controllers/
-  │   │   ├── models/
-  │   │   ├── routes/
-  │   │   ├── middlewares/
-  │   │   ├── config/
-  │   │   └── app.js
-  │   ├── .env
-  │   ├── package.json
-  │   └── ...
-  └── ...
-```
-
 ## Cara Instalasi & Menjalankan
 ### 1. **Clone repo:**
 ```bash
